@@ -2,7 +2,7 @@ import unittest
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from ExpressoLexer import ExpressoLexer
 from ExpressoParser import ExpressoParser
-from ast_nodes import Expression, Factor, FunctionCall, MethodBody, MethodDeclaration, Params, Placeholder, Statement, Term, TypeBody, TypeDeclaration, VariableDeclaration
+from ast_nodes import *
 from expresso_listener import ExpressoListener
 
 def parse_expresso_code(code):
@@ -233,7 +233,7 @@ class TestExpresso(unittest.TestCase):
         }
         """
         method_body = MethodBody([
-            Statement(Expression(Term(Factor(FunctionCall("foo", [])))))
+            Statement(Expression(Term(Factor(MethodCall("foo", [])))))
         ])
         method_decl = MethodDeclaration('doSomething', Params([]), method_body)
         expected_ast = [method_decl]
@@ -247,7 +247,7 @@ class TestExpresso(unittest.TestCase):
         }
         """
         method_body = MethodBody([
-            Statement(Expression(Term(Factor(FunctionCall("foo", [
+            Statement(Expression(Term(Factor(MethodCall("foo", [
                 Expression(Term(Factor(1))),
                 Expression(Term(Factor(2))),
                 Expression(Term(Factor("x")))

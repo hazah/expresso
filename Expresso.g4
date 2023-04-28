@@ -1,20 +1,18 @@
 grammar Expresso;
 
 // Parser rules
-program: (type_declaration | method_declaration | variable_declaration)*;
+program: (type_declaration | method_declaration | variable_declaration | statement)*;
 
 type_declaration: TYPE ID (LCURLY type_body RCURLY | SEMI);
 type_body: (method_declaration | variable_declaration)*;
 method_declaration: METHOD ID LPAREN params RPAREN (LCURLY method_body RCURLY | SEMI);
-params: (type ID (COMMA type ID)*)?;
+params: (type_name ID (COMMA type_name ID)*)?;
 method_body: (variable_declaration | statement)*;
 
-variable_declaration: type ID (ASSIGN expression)? SEMI;
-
-statement: expression;
-
-// if: IF LPAREN logic RPAREN block;
-// block: LCURLY (variable_declaration | statement)* RCURLY;
+variable_declaration: type_name ID (ASSIGN expression)? SEMI;
+statement: expression SEMI;
+block: LCURLY program RCURLY;
+value: expression | logic;
 
 logic: or;
 or: and ((OR) and)*;
@@ -24,11 +22,11 @@ relational: expression((LT | LE | GT | GE) expression)*;
 
 expression: term ((PLUS | MINUS) term)*;
 term: factor ((STAR | SLASH) factor)*;
-factor: LPAREN expression RPAREN | function_call | ID | NUMBER;
-function_call: ID LPAREN (expression (COMMA expression)*)? RPAREN;
+factor: LPAREN expression RPAREN | method_call | ID | NUMBER;
+method_call: ID LPAREN (value (COMMA value)*)? RPAREN;
 
 placeholder: 'placeholder';
-type: ID;
+type_name: ID;
 
 // Lexer rules
 IF: 'if';

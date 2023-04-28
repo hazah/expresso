@@ -138,18 +138,18 @@ class Factor(ASTNode):
         return f"Factor(value={self.value})"
 
 
-class FunctionCall(ASTNode):
+class MethodCall(ASTNode):
     def __init__(self, name, args=None):
         self.name = name
         self.args = args or []
 
     def __eq__(self, other):
-        if not isinstance(other, FunctionCall):
+        if not isinstance(other, MethodCall):
             return False
         return self.name == other.name and self.args == other.args
 
     def __repr__(self):
-        return f"FunctionCall(name={self.name}, args={self.args})"
+        return f"MethodCall(name={self.name}, args={self.args})"
 
 class Statement(ASTNode):
     def __init__(self, body):

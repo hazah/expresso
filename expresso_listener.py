@@ -1,15 +1,17 @@
-# Generated from Expresso.g4 by ANTLR 4.12.0
-from antlr4 import *
+# Purpose: Listener for the Expresso language
+
 if __name__ is not None and "." in __name__:
     from .ExpressoParser import ExpressoParser
+    from .ExpressoListener import ExpressoListener as ExpressoListenerBase
 else:
     from ExpressoParser import ExpressoParser
+    from ExpressoListener import ExpressoListener as ExpressoListenerBase
 
-from ast_nodes import And, Equality, Expression, Factor, FunctionCall, IfStatement, Or, Program, Relational, Term, TypeDeclaration, TypeBody, MethodDeclaration, Params, MethodBody, VariableDeclaration, Statement, Placeholder
+from ast_nodes import *
 
 
 # This class defines a complete listener for a parse tree produced by ExpressoParser.
-class ExpressoListener(ParseTreeListener):
+class ExpressoListener(ExpressoListenerBase):
 
     def __init__(self):
         self.stack = []
@@ -67,8 +69,8 @@ class ExpressoListener(ParseTreeListener):
 
     # Enter a parse tree produced by ExpressoParser#params.
     def enterParams(self, ctx:ExpressoParser.ParamsContext):
-        param_count = len(ctx.type_())
-        params_list = [self.processParam(ctx.type_(i), ctx.ID(i)) for i in range(param_count)]
+        param_count = len(ctx.type_name())
+        params_list = [self.processParam(ctx.type_name(i), ctx.ID(i)) for i in range(param_count)]
         self.stack.append(params_list)
 
     # Exit a parse tree produced by ExpressoParser#params.
@@ -93,7 +95,7 @@ class ExpressoListener(ParseTreeListener):
 
     # Enter a parse tree produced by ExpressoParser#variable_declaration.
     def enterVariable_declaration(self, ctx:ExpressoParser.Variable_declarationContext):
-        variable_type = ctx.type_().getText()
+        variable_type = ctx.type_name().getText()
         variable_name = ctx.ID().getText()
         variable_declaration = VariableDeclaration(variable_type, variable_name, None)
         self.stack.append(variable_declaration)
@@ -150,9 +152,9 @@ class ExpressoListener(ParseTreeListener):
         if ctx.expression():
             expr = self.stack.pop()
             self.stack.append(Factor(expr))
-        elif ctx.function_call():
-            func_call = self.stack.pop()
-            self.stack.append(Factor(func_call))
+        elif ctx.method_call():
+            method_call = self.stack.pop()
+            self.stack.append(Factor(method_call))
         elif ctx.ID():
             id = ctx.ID().getText()
             self.stack.append(Factor(id))
@@ -161,26 +163,14 @@ class ExpressoListener(ParseTreeListener):
             self.stack.append(Factor(number))
 
     # Enter a parse tree produced by ExpressoParser#function_call.
-    def enterFunction_call(self, ctx:ExpressoParser.Function_callContext):
+    def enterMethod_call(self, ctx:ExpressoParser.Method_callContext):
         pass
 
     # Exit a parse tree produced by ExpressoParser#function_call.
-    def exitFunction_call(self, ctx:ExpressoParser.Function_callContext):
+    def exitMethod_call(self, ctx:ExpressoParser.Method_callContext):
         name = ctx.ID().getText()
-        args = [self.stack.pop() for _ in range(len(ctx.expression()))][::-1]
-        self.stack.append(FunctionCall(name, args))
-
-    
-    # Enter a parse tree produced by ExpressoParser#if_stmt.
-    def enterIf_stmt(self, ctx:ExpressoParser.If_stmtContext):
-        pass
-
-    # Exit a parse tree produced by ExpressoParser#if_stmt.
-    def exitIf_stmt(self, ctx:ExpressoParser.If_stmtContext):
-        condition = self.stack.pop()
-        block = self.stack.pop()
-        if_stmt = IfStatement(condition, block)
-        self.stack.append(if_stmt)
+        args = [self.stack.pop() for _ in range(len(ctx.value()))][::-1]
+        self.stack.append(MethodCall(name, args))
 
 
     def enterRelational(self, ctx:ExpressoParser.RelationalContext):
@@ -224,7 +214,11 @@ class ExpressoListener(ParseTreeListener):
     def enterLogic(self, ctx:ExpressoParser.LogicContext):
         pass
 
-    def exitLogic(self,
+    def exitLogic(self, ctx:ExpressoParser.LogicContext):
+        or_expression = self.stack.pop()
+        logic_node = Logic(or_expression)
+        self.stack.append(logic_node)
+
 
     # Enter a parse tree produced by ExpressoParser#placeholder.
     def enterPlaceholder(self, ctx:ExpressoParser.PlaceholderContext):
@@ -236,11 +230,11 @@ class ExpressoListener(ParseTreeListener):
 
 
     # Enter a parse tree produced by ExpressoParser#type.
-    def enterType(self, ctx:ExpressoParser.TypeContext):
+    def enterType(self, ctx:ExpressoParser.Type_nameContext):
         pass
 
     # Exit a parse tree produced by ExpressoParser#type.
-    def exitType(self, ctx:ExpressoParser.TypeContext):
+    def exitType(self, ctx:ExpressoParser.Type_nameContext):
         pass
 
 

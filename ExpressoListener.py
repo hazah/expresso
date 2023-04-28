@@ -80,6 +80,69 @@ class ExpressoListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by ExpressoParser#block.
+    def enterBlock(self, ctx:ExpressoParser.BlockContext):
+        pass
+
+    # Exit a parse tree produced by ExpressoParser#block.
+    def exitBlock(self, ctx:ExpressoParser.BlockContext):
+        pass
+
+
+    # Enter a parse tree produced by ExpressoParser#value.
+    def enterValue(self, ctx:ExpressoParser.ValueContext):
+        pass
+
+    # Exit a parse tree produced by ExpressoParser#value.
+    def exitValue(self, ctx:ExpressoParser.ValueContext):
+        pass
+
+
+    # Enter a parse tree produced by ExpressoParser#logic.
+    def enterLogic(self, ctx:ExpressoParser.LogicContext):
+        pass
+
+    # Exit a parse tree produced by ExpressoParser#logic.
+    def exitLogic(self, ctx:ExpressoParser.LogicContext):
+        pass
+
+
+    # Enter a parse tree produced by ExpressoParser#or.
+    def enterOr(self, ctx:ExpressoParser.OrContext):
+        pass
+
+    # Exit a parse tree produced by ExpressoParser#or.
+    def exitOr(self, ctx:ExpressoParser.OrContext):
+        pass
+
+
+    # Enter a parse tree produced by ExpressoParser#and.
+    def enterAnd(self, ctx:ExpressoParser.AndContext):
+        pass
+
+    # Exit a parse tree produced by ExpressoParser#and.
+    def exitAnd(self, ctx:ExpressoParser.AndContext):
+        pass
+
+
+    # Enter a parse tree produced by ExpressoParser#equality.
+    def enterEquality(self, ctx:ExpressoParser.EqualityContext):
+        pass
+
+    # Exit a parse tree produced by ExpressoParser#equality.
+    def exitEquality(self, ctx:ExpressoParser.EqualityContext):
+        pass
+
+
+    # Enter a parse tree produced by ExpressoParser#relational.
+    def enterRelational(self, ctx:ExpressoParser.RelationalContext):
+        pass
+
+    # Exit a parse tree produced by ExpressoParser#relational.
+    def exitRelational(self, ctx:ExpressoParser.RelationalContext):
+        pass
+
+
     # Enter a parse tree produced by ExpressoParser#expression.
     def enterExpression(self, ctx:ExpressoParser.ExpressionContext):
         pass
@@ -107,12 +170,12 @@ class ExpressoListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by ExpressoParser#function_call.
-    def enterFunction_call(self, ctx:ExpressoParser.Function_callContext):
+    # Enter a parse tree produced by ExpressoParser#method_call.
+    def enterMethod_call(self, ctx:ExpressoParser.Method_callContext):
         pass
 
-    # Exit a parse tree produced by ExpressoParser#function_call.
-    def exitFunction_call(self, ctx:ExpressoParser.Function_callContext):
+    # Exit a parse tree produced by ExpressoParser#method_call.
+    def exitMethod_call(self, ctx:ExpressoParser.Method_callContext):
         pass
 
 
@@ -125,12 +188,12 @@ class ExpressoListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by ExpressoParser#type.
-    def enterType(self, ctx:ExpressoParser.TypeContext):
+    # Enter a parse tree produced by ExpressoParser#type_name.
+    def enterType_name(self, ctx:ExpressoParser.Type_nameContext):
         pass
 
-    # Exit a parse tree produced by ExpressoParser#type.
-    def exitType(self, ctx:ExpressoParser.TypeContext):
+    # Exit a parse tree produced by ExpressoParser#type_name.
+    def exitType_name(self, ctx:ExpressoParser.Type_nameContext):
         pass
 
 
