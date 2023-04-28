@@ -255,3 +255,58 @@ class Placeholder(ASTNode):
     
     def __repr__(self):
         return f"Placeholder()"
+
+class Concept(ASTNode):
+    def __init__(self, name, type_var, constraints):
+        self.name = name
+        self.type_var = type_var
+        self.constraints = constraints
+
+    def __eq__(self, value):
+        if not isinstance(value, Concept):
+            return False
+        return self.name == value.name and self.type_var == value.type_var and self.constraints == value.constraints
+
+    def __repr__(self):
+        return f"Concept(name={self.name}, type_var={self.type_var}, constraints={self.constraints})"
+
+
+class Constraint(ASTNode):
+    def __init__(self, expression):
+        self.expression = expression
+
+    def __eq__(self, value):
+        if not isinstance(value, Constraint):
+            return False
+        return self.expression == value.expression
+
+    def __repr__(self):
+        return f"Constraint(expression={self.expression})"
+
+
+class GenericParameter(ASTNode):
+    def __init__(self, concept, type_var):
+        self.concept = concept
+        self.type_var = type_var
+
+    def __eq__(self, value):
+        if not isinstance(value, GenericParameter):
+            return False
+        return self.concept == value.concept and self.type_var == value.type_var
+
+    def __repr__(self):
+        return f"GenericParameter(concept={self.concept}, type_var={self.type_var})"
+
+
+class GenericType(ASTNode):
+    def __init__(self, base_type, type_arguments):
+        self.base_type = base_type
+        self.type_arguments = type_arguments
+
+    def __eq__(self, value):
+        if not isinstance(value, GenericType):
+            return False
+        return self.base_type == value.base_type and self.type_arguments == value.type_arguments
+
+    def __repr__(self):
+        return f"GenericType(base_type={self.base_type}, type_arguments={self.type_arguments})"
