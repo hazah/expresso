@@ -1,93 +1,215 @@
-# # Expresso Programming Language
+# Expresso Programming Language
 
-Expresso is a work-in-progress programming language aimed at providing a modern, expressive, and powerful syntax. The language is designed with simplicity and flexibility in mind, making it easy to learn and extend.
+Expresso is a versatile, powerful, and expressive programming language that combines multiple programming paradigms, including object-oriented programming, generic programming, subject-oriented programming, and aspect-oriented programming. The language is designed to enable developers to create highly modular, reusable, and maintainable code.
 
-This README provides an overview of the current state of Expresso's grammar, which is subject to change as the language evolves.
+## Key Features
 
-## Grammar
+- **Types**: Define custom data types with their own properties and methods.
+- **Methods**: Encapsulate functionality within methods that can be called with various arguments.
+- **Subjects**: Organize related types and aspects within subjects, facilitating modular development.
+- **Aspects**: Add behavior to existing types without modifying their source code using aspect-oriented programming.
+- **Concepts**: Specify and enforce constraints on types, ensuring that only appropriate types are used in specific contexts.
+- **Templates**: Create reusable code templates that can be instantiated with different types.
+- **Capturing**: Capture and handle thrown values using the `capture`, `catch`, and `continue` constructs.
 
-The grammar for Expresso is defined using ANTLR notation. It currently supports type declarations, method declarations, variable declarations, and statements.
+## Language Syntax
 
-### Type Declarations
+### Types
 
-Types can be declared using the `type` keyword, followed by an identifier and an optional body enclosed in curly braces (`{}`).
-
-```expresso
+```
 type TypeName {
-  // Type body
+  public {
+    // Properties and methods
+  }
 }
 ```
 
-### Method Declarations
+### Methods
 
-Methods can be declared using the `method` keyword, followed by an identifier, parameter list enclosed in parentheses (`()`), and an optional body enclosed in curly braces (`{}`).
-
-```expresso
-method methodName(typeName paramName, ...) {
+```
+method MethodName(ConceptName valueName) {
   // Method body
 }
 ```
 
-### Variable Declarations
+### Subjects
 
-Variables can be declared using a type name, followed by an identifier, an optional assignment, and a semicolon (`;`).
-
-```expresso
-typeName varName = expression;
+```
+subject SubjectName {
+  // Type declarations, aspects, and imports
+}
 ```
 
-### Statements
+### Aspects
 
-Statements are terminated with a semicolon (`;`). Currently, Expresso supports expressions as statements.
-
-```expresso
-expression;
+```
+aspect AspectName {
+  // Pointcuts and advice
+}
 ```
 
-### Expressions and Logic
+### Concepts
 
-Expresso supports various expressions, including arithmetic, logic, and method calls.
-
-#### Arithmetic
-
-The language supports addition, subtraction, multiplication, and division.
-
-```expresso
-expression + term;
-expression - term;
-term * factor;
-term / factor;
+```
+concept ConceptName<type T> {
+  throw T::methodName == method (OtherConcept valueName);
+}
 ```
 
-#### Logic
+### Templates
 
-The language provides logical constructs such as `and`, `or`, and comparison operators.
-
-```expresso
-value and value;
-value or value;
-value == value;
-value != value;
-value < value;
-value <= value;
-value > value;
-value >= value;
+```
+template TemplateName<type T> {
+  // Template body
+}
 ```
 
-#### Method Calls
+### Capturing
 
-Method calls can be made by specifying an identifier, followed by a parameter list enclosed in parentheses (`()`).
-
-```expresso
-methodName(value, ...);
+```
+capture {
+  // Expressions that throw values
+} catch(ValueType valueName) {
+  // Handle captured value
+  continue valueName;
+}
 ```
 
-## Future Development
+## Example
 
-As Expresso is a work-in-progress language, its grammar and features will continue to evolve. Some potential future additions include support for control structures (if/else, loops, etc.), advanced types, and other language constructs.
+The following example demonstrates the key features of Expresso, including types, methods, subjects, aspects, concepts, templates, and capturing:
 
-Feel free to contribute to the project by submitting issues, pull requests, or participating in discussions.
+```expresso
+type Animal {
+  public {
+    // Animal-specific properties and methods
+  }
+}
 
-## License
+type Food {
+  public {
+    // Food-specific properties and methods
+  }
+}
 
-The Expresso language and its associated code are released under an open-source license. For more information, see the `LICENSE` file in the repository.
+subject DomesticAnimals {
+  type Animal {
+    // Domestic animal-specific properties and methods
+  }
+
+  type Food {
+    // Food-specific properties and methods
+  }
+
+  aspect DomesticAnimalAspect {
+    method eat(Animal animal, Food food) {
+      throw "Eating the food"
+    }
+  }
+}
+
+subject WildAnimals {
+  type Animal {
+    // Wild animal-specific properties and methods
+  };
+
+  aspect WildAnimalAspect {
+    method hunt(Animal animal) {
+      throw "Hunting the prey"
+    }
+  }
+}
+
+subject Logging {
+  method log(String message) {
+    // Log the message
+  }
+  aspect LoggingAspect {
+    pointcut feedable(): execution(feed(Farmer, Animal, Food)) && within(Farm) && args(farmer, animal, food);
+    pointcut observable(): execution(observe(Farmer, Animal)) && within(Farm) && args(farmer, animal);
+
+    before {
+      feedable(Farmer farmer, Animal animal, Food food) {
+        log("Farmer " + farmer + " feeding " + animal + " with " + food);
+      }
+      observable(Farmer farmer, Animal animal) {
+        log("Farmer " + farmer + " observing " + animal);
+      }
+    }
+
+    after {
+      feedable(Farmer farmer, Animal animal, Food food) {
+        log("Farmer " + farmer + " fed " + animal + " with " + food);
+      }
+      observable(Farmer farmer, Animal animal) {
+        log("Farmer " + farmer + " observed " + animal);
+      }
+    }
+  }
+}
+
+type Farmer {
+  public {
+    // Farmer-specific properties and methods
+  }
+}
+
+concept Eater<type T> {
+  throw eat(T, Food) == method;
+}
+
+concept Hunter<type T> {
+  throw hunt(T) == method;
+}
+
+subject Farm {
+  type Farmer {
+    // Farmer-specific properties and methods
+  }
+
+  aspect FarmAspect {
+    method feed(Farmer farmer, Eater animal, Food food) {
+      animal.eat(food);
+    }
+
+    method observe(Farmer farmer, Hunter animal) {
+      animal.hunt();
+    }
+  }
+}
+
+subject InsideFarm {
+  import DomesticAnimals;
+}
+
+subject OutsideFarm {
+  import WildAnimals;
+}
+
+subject FencedFarm {
+  compose Farm || InsideFarm || OutsideFarm || Logging;
+}
+
+method main() {
+  Animal dog, cat, cheetah, bear;
+  Farmer farmer;
+
+  Logging() {
+    FencedFarm() {
+      capture {
+        InsideFarm() {
+          farmer.feed(dog, Food()).log();
+          farmer.feed(cat, Food()).log();
+        }
+
+        OutsideFarm() {
+          farmer.observe(cheetah).log();
+          farmer.observe(bear).log();
+        }
+      } catch(String message) {
+        continue message;
+      }
+    }
+  }
+}
+```
