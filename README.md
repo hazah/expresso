@@ -26,7 +26,7 @@ type TypeName {
 
 ### Methods
 
-```
+```rust
 method MethodName(ConceptName valueName) {
   // Method body
 }
@@ -34,7 +34,7 @@ method MethodName(ConceptName valueName) {
 
 ### Subjects
 
-```
+```rust
 subject SubjectName {
   // Type declarations, aspects, and imports
 }
@@ -42,7 +42,7 @@ subject SubjectName {
 
 ### Aspects
 
-```
+```rust
 aspect AspectName {
   // Pointcuts and advice
 }
@@ -50,7 +50,7 @@ aspect AspectName {
 
 ### Concepts
 
-```
+```rust
 concept ConceptName<type T> {
   throw methodName(T, OtherConcept) == method;
 }
@@ -58,7 +58,7 @@ concept ConceptName<type T> {
 
 ### Templates
 
-```
+```rust
 type TemplateType<type T> {
   // Template body
 }
@@ -74,7 +74,7 @@ subject TemplateSubject<type T> {
 
 ### Capturing
 
-```
+```rust
 capture {
   // Expressions that throw values
 } catch(ValueType valueName) {
@@ -87,7 +87,7 @@ capture {
 
 The following example demonstrates the key features of Expresso, including types, methods, subjects, aspects, concepts, templates, and capturing:
 
-```expresso
+```rust
 type Animal {
   public {
     // Animal-specific properties and methods
@@ -230,7 +230,7 @@ Expresso embraces Domain-Driven Design principles to improve code readability an
 
 The following is a simple online store domain model using the DDD constructs:
 
-```expresso
+```rust
 // Value objects
 value Email {
   String address;
@@ -303,7 +303,7 @@ Expresso supports Test-Driven Development (TDD) as a first-class citizen by prov
 
 Let's build a simple calculator and write tests for its functionality using Expresso's TDD constructs:
 
-```expresso
+```rust
 type Calculator {
   method add(Double a, Double b) {
     throw a + b;
