@@ -59,7 +59,15 @@ concept ConceptName<type T> {
 ### Templates
 
 ```
-template TemplateName<type T> {
+type TemplateType<type T> {
+  // Template body
+}
+
+method TemplateMehtod<type T> {
+  // Template body
+}
+
+subjcet TemplateSubject<type T> {
   // Template body
 }
 ```
