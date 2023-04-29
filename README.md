@@ -67,7 +67,7 @@ method TemplateMehtod<type T> {
   // Template body
 }
 
-subjcet TemplateSubject<type T> {
+subject TemplateSubject<type T> {
   // Template body
 }
 ```
