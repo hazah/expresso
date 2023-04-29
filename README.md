@@ -16,7 +16,7 @@ Expresso is a versatile, powerful, and expressive programming language that comb
 
 ### Types
 
-```
+```rust
 type TypeName {
   public {
     // Properties and methods
