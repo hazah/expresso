@@ -52,7 +52,7 @@ aspect AspectName {
 
 ```
 concept ConceptName<type T> {
-  throw T::methodName == method (OtherConcept valueName);
+  throw methodName(T, OtherConcept) == method;
 }
 ```
 
