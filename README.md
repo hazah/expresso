@@ -139,25 +139,28 @@ subject Logging {
     // Log the message
   }
   aspect LoggingAspect {
-    pointcut feedable: execution(feed(Farmer, Animal, Food)) && within(Farm) && args(farmer, animal, food);
-    pointcut observable: execution(observe(Farmer, Animal)) && within(Farm) && args(farmer, animal);
+    pointcut feedable(Farmer farmer, Animal animal, Food food): execution(feed) && within(Farm) && args(farmer, animal, food);
+    pointcut observable(Farmer farmer, Animal animal): execution(observe) && within(Farm) && args(farmer, animal);
 
-    before {
-      feedable(Farmer farmer, Animal animal, Food food) {
-        log("Farmer " + farmer + " feeding " + animal + " with " + food);
-      }
-      observable(Farmer farmer, Animal animal) {
-        log("Farmer " + farmer + " observing " + animal);
-      }
+    before(Farmer farmer, Animal animal, Food food): feedable(farmer, animal, food) {
+      log("Farmer " + farmer + " feeding " + animal + " with " + food);
+    }
+    before(Farmer farmer, Animal animal): observable(farmer, animal) {
+      log("Farmer " + farmer + " observing " + animal);
     }
 
-    after {
-      feedable(Farmer farmer, Animal animal, Food food) {
-        log("Farmer " + farmer + " fed " + animal + " with " + food);
-      }
-      observable(Farmer farmer, Animal animal) {
-        log("Farmer " + farmer + " observed " + animal);
-      }
+    after(Farmer farmer, Animal animal, Food food): feedable(farmer, animal, food) {
+      log("Farmer " + farmer + " fed " + animal + " with " + food);
+    }
+    after(Farmer farmer, Animal animal): observable(farmer, animal) {
+      log("Farmer " + farmer + " observed " + animal);
+    }
+
+    around(Farmer farmer, Animal animal, Food food): feedable(farmer, animal, food) {
+      proceed(farmer, animal, food);
+    }
+    around(Farmer farmer, Animal animal): observable(farmer, animal) {
+      proceed(farmer, animal);
     }
   }
 }
@@ -267,13 +270,13 @@ aggregate Order {
     publish OrderCreated(); // Automatically persists the event to the event store
   }
   retrieve(/* parameters */) {
-    // Retrieve the order from the event store
+    // Retrieve the order from the store
   }
   update(/* parameters */) {
-    // Update the order in the event store
+    // Update the order in the store
   }
   delete(/* parameters */) {
-    // Delete the order from the event store
+    // Delete the order from the store
   }
 }
 
@@ -291,18 +294,69 @@ entity CartItem {
   Integer quantity;
 }
 
+// provides crud operations for entity data. 
+data DatabaseIO {
+  create Order(dto Order order) {
+    // Uses Order factory to transform the dto back to entity
+  }
+
+  retrieve Order(id Order) {
+    // Uses Order factory to transform the dto back to entity
+  }
+
+  retrieve Order(dto Order order) {
+    // Uses Order factory to transform the dto back to entity
+  }
+
+  retrieve all Order() {
+    // Uses Order factory to transform the dto back to entity
+  }
+
+  retrieve EligibleForDiscount Order(dto Order order) {
+    // Uses Order factory to transform the dto back to entity
+  }
+
+  update Order(Order order) {
+    // Uses Order factory to transform the dto back to entity
+  }
+
+  delete Order(id Order order) {
+    // Uses Order factory to transform the dto back to entity
+  }
+}
+
+data ConsoleIO {
+  create Order(dto Order order) {
+    // print the dto to the console
+  }
+
+  retrieve Order() {
+    // generates dto from console and Order factory transforms it into entity
+  }
+}
+
 // Repository
 repository Order {
+  create save using DatabaseIO; // Adds save method to database that creates the order
   
+  retrieve find id using DatabaseIO; // Adds find method to database that finds the order by id
+  retrieve find dto using DatabaseIO; // Adds find method to database that finds the orders that matches the DTO
+  retrieve find all using DatabaseIO; // Adds find method to database that finds all orders
+  retrieve findForDiscount EligibleForDiscount(dto) using DatabaseIO; // Adds find method to database that finds all orders that are eligible for discount
+
+  create print dto using ConsoleIO; // Adds print method to console that prints the order
+  retrieve get using ConsoleIO; // Adds get method to get order from the console
+
+  update save dto using DatabaseIO; // Adds save method to database that updates the order
+  delete delete id using DatabaseIO; // Adds delete method to database that deletes the order
 }
 
 // Domain Event
-event ItemsAddedToCart(Cart cart, CartItem[] items) {
-
-}
+event ItemsAddedToCart(Cart cart, CartItem[] items);
 
 // Domain Service
 service AddToCart(Cart cart, CartItem[] items) {
+  cart.items.append(items);
   publish ItemsAddedToCart(cart, items)
 }
 
@@ -310,8 +364,6 @@ service AddToCart(Cart cart, CartItem[] items) {
 application CreateOrder(Customer customer, Cart cart) {
   
 }
-
-
 
 factory Order {
   create from dto; // Automatically maps the DTO to the Order aggregate
@@ -327,66 +379,12 @@ listener OrderCreatedListener {
   }
 }
 
-data DatabaseIO {
-  create Order(dto Order order) {
-
-  }
-
-  retrieve Order(id) {
-
-  }
-
-  retrieve Order(dto Order order) {
-
-  }
-
-  retrieve all Order() {
-
-  }
-
-  retrieve EligibleForDiscount Order(dto Order order) {
-
-  }
-
-  update Order(Order order) {
-
-  }
-
-  delete Order(Order order) {
-
-  }
-}
-
-data ConsoleIO {
-  create Order(dto Order order) {
-
-  }
-
-  retrieve Order() {
-
-  }
-}
-
 repository EventStore {
   create save OrderCreated using DatabaseIO; // Adds save method to database that saves the event
   create print dto OrderCreated using ConsoleIO; // Adds print method to console that prints the event
 
   create save OrderShipped using DatabaseIO; // Adds save method to database that saves the event
   create print dto OrderShipped using ConsoleIO; // Adds print method to console that prints the event
-}
-
-repository Order {
-  create save using DatabaseIO; // Adds save method to database that creates the order
-  
-  retrieve find id using DatabaseIO; // Adds find method to database that finds the order by id
-  retrieve find dto using DatabaseIO; // Adds find method to database that finds the orders that matches the DTO
-  retrieve find all using DatabaseIO; // Adds find method to database that finds all orders
-  retrieve findForDiscount EligibleForDiscount(dto) using DatabaseIO; // Adds find method to database that finds all orders that are eligible for discount
-
-  create print dto using ConsoleIO; // Adds print method to console that prints the order
-
-  update save dto using DatabaseIO; // Adds save method to database that updates the order
-  delete delete using DatabaseIO; // Adds delete method to database that deletes the order
 }
 
 // Define a custom channel for connecting to an event store
