@@ -452,13 +452,6 @@ In this example, we defined value objects (Email and FullName), entity objects (
 
 In Expresso, you can create code that is more focused on the domain logic, making it easier to focus on the problem being addressed.
 
-### Benefits of DDD in Expresso
-
-- Improved code readability and maintainability
-- A focus on high-level domain concepts
-- Easier communication between developers and domain experts
-- A natural fit for complex and evolving domain models
-
 By incorporating DDD principles of the Expresso language, you can better reflect the underlying domain.
 
 ## Test-Driven Development in Expresso
