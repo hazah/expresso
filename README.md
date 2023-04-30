@@ -22,6 +22,12 @@ type TypeName {
     // Properties and methods
   }
 }
+
+type Derived(TypeName) {
+  public {
+    // Properties and methods
+  }
+}
 ```
 
 ### Methods
@@ -35,7 +41,7 @@ method MethodName(ConceptName valueName) {
 ### Subjects
 
 ```rust
-subject SubjectName {
+subject SubjectName(ConceptName argValue) {
   // Type declarations, aspects, and imports
 }
 ```
@@ -44,14 +50,14 @@ subject SubjectName {
 
 ```rust
 aspect AspectName {
-  // Pointcuts and advice
+  // Methods, pointcuts and advice
 }
 ```
 
 ### Concepts
 
 ```rust
-concept ConceptName<type T> {
+concept ConceptName<ConceptOrType T> {
   throw methodName(T, OtherConcept) == method;
 }
 ```
@@ -59,15 +65,15 @@ concept ConceptName<type T> {
 ### Templates
 
 ```rust
-type TemplateType<type T> {
+type TemplateType<ConceptName T> {
   // Template body
 }
 
-method TemplateMehtod<type T> {
+method TemplateMehtod<ConceptName T>() {
   // Template body
 }
 
-subject TemplateSubject<type T> {
+subject TemplateSubject<ConceptName T>() {
   // Template body
 }
 ```
@@ -133,8 +139,8 @@ subject Logging {
     // Log the message
   }
   aspect LoggingAspect {
-    pointcut feedable(): execution(feed(Farmer, Animal, Food)) && within(Farm) && args(farmer, animal, food);
-    pointcut observable(): execution(observe(Farmer, Animal)) && within(Farm) && args(farmer, animal);
+    pointcut feedable: execution(feed(Farmer, Animal, Food)) && within(Farm) && args(farmer, animal, food);
+    pointcut observable: execution(observe(Farmer, Animal)) && within(Farm) && args(farmer, animal);
 
     before {
       feedable(Farmer farmer, Animal animal, Food food) {
@@ -170,7 +176,7 @@ concept Hunter<type T> {
   throw hunt(T) == method;
 }
 
-subject Farm {
+subject Farm() {
   type Farmer {
     // Farmer-specific properties and methods
   }
@@ -186,37 +192,35 @@ subject Farm {
   }
 }
 
-subject InsideFarm {
-  import DomesticAnimals;
+subject InsideFarm() {
+  import DomesticAnimals();
 }
 
-subject OutsideFarm {
-  import WildAnimals;
+subject OutsideFarm() {
+  import WildAnimals();
 }
 
-subject FencedFarm {
-  compose Farm || InsideFarm || OutsideFarm || Logging;
+subject FencedFarm() {
+  compose Farm() || Logging();
 }
 
 method main() {
   Animal dog, cat, cheetah, bear;
   Farmer farmer;
 
-  Logging() {
-    FencedFarm() {
-      capture {
-        InsideFarm() {
-          farmer.feed(dog, Food()).log();
-          farmer.feed(cat, Food()).log();
-        }
-
-        OutsideFarm() {
-          farmer.observe(cheetah).log();
-          farmer.observe(bear).log();
-        }
-      } catch(String message) {
-        continue message;
+  FencedFarm() {
+    capture {
+      InsideFarm() {
+        farmer.feed(dog, Food()).log();
+        farmer.feed(cat, Food()).log();
       }
+
+      OutsideFarm() {
+        farmer.observe(cheetah).log();
+        farmer.observe(bear).log();
+      }
+    } catch(String message) {
+      continue message;
     }
   }
 }
@@ -256,7 +260,25 @@ entity Product {
 // Aggregate root
 aggregate Order {
   Customer customer;
-  List<OrderItem> items;
+  OrderItem[] items;
+
+  // lifecycle methods triggered by repositories
+  create(/* parameters */) {
+    publish OrderCreated(); // Automatically persists the event to the event store
+  }
+  retrieve(/* parameters */) {
+    // Retrieve the order from the event store
+  }
+  update(/* parameters */) {
+    // Update the order in the event store
+  }
+  delete(/* parameters */) {
+    // Delete the order from the event store
+  }
+}
+
+aggregate Cart {
+  CartItem[] items;
 }
 
 entity OrderItem {
@@ -264,25 +286,168 @@ entity OrderItem {
   Integer quantity;
 }
 
+entity CartItem {
+  Product product;
+  Integer quantity;
+}
+
 // Repository
-repository OrderRepository {
-  method save(Order order);
-  method findById(UUID id);
-  method findAll();
+repository Order {
+  
+}
+
+// Domain Event
+event ItemsAddedToCart(Cart cart, CartItem[] items) {
+
 }
 
 // Domain Service
-service OrderService {
-  method placeOrder(Customer customer, List<OrderItem> items);
+service AddToCart(Cart cart, CartItem[] items) {
+  publish ItemsAddedToCart(cart, items)
 }
 
 // Application Service
-service OrderApplicationService {
-  method createOrder(Customer customer, List<Product> products);
+application CreateOrder(Customer customer, Cart cart) {
+  
+}
+
+
+
+factory Order {
+  create from dto; // Automatically maps the DTO to the Order aggregate
+  create from dto OrderLikeEntity; // Automatically maps the DTO to the OrderLikeEntity entity
+}
+
+listener OrderCreatedListener {
+  subscribe OrderEventChannel;
+
+  on OrderCreated(event) {
+    // Perform actions in response to the OrderCreated event
+    // Example: send a confirmation email, update the inventory, etc.
+  }
+}
+
+data DatabaseIO {
+  create Order(dto Order order) {
+
+  }
+
+  retrieve Order(id) {
+
+  }
+
+  retrieve Order(dto Order order) {
+
+  }
+
+  retrieve all Order() {
+
+  }
+
+  retrieve EligibleForDiscount Order(dto Order order) {
+
+  }
+
+  update Order(Order order) {
+
+  }
+
+  delete Order(Order order) {
+
+  }
+}
+
+data ConsoleIO {
+  create Order(dto Order order) {
+
+  }
+
+  retrieve Order() {
+
+  }
+}
+
+repository EventStore {
+  create save OrderCreated using DatabaseIO; // Adds save method to database that saves the event
+  create print dto OrderCreated using ConsoleIO; // Adds print method to console that prints the event
+
+  create save OrderShipped using DatabaseIO; // Adds save method to database that saves the event
+  create print dto OrderShipped using ConsoleIO; // Adds print method to console that prints the event
+}
+
+repository Order {
+  create save using DatabaseIO; // Adds save method to database that creates the order
+  
+  retrieve find id using DatabaseIO; // Adds find method to database that finds the order by id
+  retrieve find dto using DatabaseIO; // Adds find method to database that finds the orders that matches the DTO
+  retrieve find all using DatabaseIO; // Adds find method to database that finds all orders
+  retrieve findForDiscount EligibleForDiscount(dto) using DatabaseIO; // Adds find method to database that finds all orders that are eligible for discount
+
+  create print dto using ConsoleIO; // Adds print method to console that prints the order
+
+  update save dto using DatabaseIO; // Adds save method to database that updates the order
+  delete delete using DatabaseIO; // Adds delete method to database that deletes the order
+}
+
+// Define a custom channel for connecting to an event store
+channel EventStoreChannel {
+  inject EventStore eventStore; // Automatically injects an instance of event store
+
+  on OrderCreated(event) {
+    // Save the event to the event store
+    eventStore.save(event);
+  }
+
+  on OrderShipped(event) {
+    // Save the event to the event store
+    eventStore.save(event);
+  }
+}
+
+saga OrderManagement {
+  on OrderPlaced(event) {
+    // Process the order
+  }
+
+  on PaymentReceived(event) {
+    // Ship the order
+  }
+
+  on OrderShipped(event) {
+    // Notify the customer
+  }
+}
+
+specification EligibleForDiscount(Order order) {
+  throw order.total >= 5; // can be used in queries
+}
+
+context Sales {
+  import Customers;
+  import Orders;
+  import Discounts;
+}
+
+context Shipping {
+  import Orders;
+  import Deliveries;
+
+  // uses Sales context as the source of the Order aggregate
+  // providing context mapping directly for bounded contexts
+  repository Order {
+    create save dto using Sales; // Adds save method to context that creates the order
+    retrieve find id using Sales; // Adds find method to context that finds the order by id
+    retrieve find dto using Sales; // Adds find method to context that finds the orders that matches the DTO
+    retrieve find all using Sales; // Adds find method to context that finds all orders
+    retrieve findForDiscount dto && EligibleForDiscount using Sales; // Adds find method to context that finds all orders that are eligible for discount
+    create print dto using Sales; // Adds print method to context that prints the order
+    update save dto using Sales; // Adds save method to context that updates the order
+    delete delete using Sales; // Adds delete method to context that deletes the order
+  }
 }
 ```
 
-In this example, we defined value objects (Email and FullName), entity objects (Customer, Product, OrderItem), an aggregate root (Order), a repository (OrderRepository), a domain service (OrderService), and an application service (OrderApplicationService). Expresso will internally rewrite these DDD constructs using its core language constructs, such as types, subjects, and aspects.
+In this example, we defined value objects (Email and FullName), entity objects (Customer, Product, OrderItem), an aggregate root (Order), a repository (OrderRepository), a domain service (AddToCart), and an application service (CreateOrder). Expresso will internally rewrite these DDD constructs using its core language constructs, such as types, subjects, and aspects.
 
 In Expresso, you can create code that is more focused on the domain logic, making it easier to focus on the problem being addressed.
 
