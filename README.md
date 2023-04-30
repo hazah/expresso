@@ -352,7 +352,11 @@ repository Order {
 }
 
 // Domain Event
-event ItemsAddedToCart(Cart cart, CartItem[] items);
+event OrderCreated() {
+  publishes to OrderEventChannel;
+}
+
+event ItemsAddedToCart(Cart cart, CartItem[] items) {}
 
 // Domain Service
 service AddToCart(Cart cart, CartItem[] items) {
@@ -362,64 +366,63 @@ service AddToCart(Cart cart, CartItem[] items) {
 
 // Application Service
 application CreateOrder(Customer customer, Cart cart) {
-  
+  // Logic for order creation
 }
 
+// Used to create entities from dtos
 factory Order {
   create from dto; // Automatically maps the DTO to the Order aggregate
   create from dto OrderLikeEntity; // Automatically maps the DTO to the OrderLikeEntity entity
 }
 
+// Listens to declared events on specified channels.
 listener OrderCreatedListener {
-  subscribe OrderEventChannel;
-
-  on OrderCreated(event) {
-    // Perform actions in response to the OrderCreated event
-    // Example: send a confirmation email, update the inventory, etc.
+  subscribe OrderEventChannel {
+    on OrderCreated(event) {
+      // Perform actions in response to the OrderCreated event
+      // Example: send a confirmation email, update the inventory, etc.
+    }
   }
 }
 
 repository EventStore {
-  create save OrderCreated using DatabaseIO; // Adds save method to database that saves the event
+  create save dto OrderCreated using DatabaseIO; // Adds save method to database that saves the event
   create print dto OrderCreated using ConsoleIO; // Adds print method to console that prints the event
 
-  create save OrderShipped using DatabaseIO; // Adds save method to database that saves the event
+  create save dto OrderShipped using DatabaseIO; // Adds save method to database that saves the event
   create print dto OrderShipped using ConsoleIO; // Adds print method to console that prints the event
 }
 
 // Define a custom channel for connecting to an event store
-channel EventStoreChannel {
-  inject EventStore eventStore; // Automatically injects an instance of event store
-
-  on OrderCreated(event) {
-    // Save the event to the event store
-    eventStore.save(event);
-  }
-
-  on OrderShipped(event) {
-    // Save the event to the event store
-    eventStore.save(event);
-  }
+channel OrderEventChannel {
+  use EventStore;
 }
 
 saga OrderManagement {
-  on OrderPlaced(event) {
-    // Process the order
-  }
+  // types, methods & attributes specific to the saga.
 
-  on PaymentReceived(event) {
-    // Ship the order
-  }
+  subscribe OrderEventChannel{
+    on OrderPlaced(event) {
+      // Process the order
+    }
 
-  on OrderShipped(event) {
-    // Notify the customer
+    on PaymentReceived(event) {
+      // Ship the order
+    }
+
+    on OrderShipped(event) {
+      // Notify the customer
+    }
   }
 }
 
+// Lazy calculation used to either query objects or apply filtering
+// potentiall through a transformation (for example, to SQL)
 specification EligibleForDiscount(Order order) {
   throw order.total >= 5; // can be used in queries
 }
 
+// Bounded context
 context Sales {
   import Customers;
   import Orders;
